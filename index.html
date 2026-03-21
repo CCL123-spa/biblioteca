@@ -912,6 +912,8 @@ function renderBooks() {
     if (currentFilter === 'leido' && b.status !== 'leido') return false;
     if (currentFilter === 'leyendo' && b.status !== 'leyendo') return false;
     if (currentFilter === 'pendiente' && b.status !== 'pendiente') return false;
+    if (currentFilter === 'noleido' && b.status !== 'noleido') return false;
+    if (currentFilter === 'dudoso' && b.status !== 'dudoso') return false;
     if (currentGenre !== 'all' && getCategory(b.genre) !== currentGenre) return false;
     if (query) {
       const inTitle = b.title.toLowerCase().includes(query);
