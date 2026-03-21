@@ -217,6 +217,12 @@
   .book-spine.leyendo { background: var(--amber); }
   .book-spine.noleido { background: #dc2626; }
   .book-spine.dudoso { background: #7c3aed; }
+  .book-spine.quiero { background: #1d4ed8; }
+  .book-spine.abandonado { background: #be185d; }
+  .book-spine.visto { background: #854d0e; }
+  .book-spine.quiero { background: #1d4ed8; }
+  .book-spine.abandonado { background: #c2410c; }
+  .book-spine.visto { background: #be185d; }
 
   .book-body {
     padding: 12px;
@@ -280,6 +286,12 @@
   .read-badge.pendiente { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
   .read-badge.noleido { background: #fee2e2; color: #dc2626; }
   .read-badge.dudoso { background: #f3e8ff; color: #7c3aed; }
+  .read-badge.quiero { background: #dbeafe; color: #1d4ed8; }
+  .read-badge.abandonado { background: #fce7f3; color: #be185d; }
+  .read-badge.visto { background: #fef9c3; color: #854d0e; }
+  .read-badge.quiero { background: #dbeafe; color: #1d4ed8; }
+  .read-badge.abandonado { background: #fde8d8; color: #c2410c; }
+  .read-badge.visto { background: #fce7f3; color: #be185d; }
 
   /* Empty state */
   .empty-state {
@@ -625,6 +637,12 @@
     <button class="filter-btn" onclick="setFilter('pendiente', this)">Pendientes</button>
     <button class="filter-btn" onclick="setFilter('noleido', this)">No leídos</button>
     <button class="filter-btn" onclick="setFilter('dudoso', this)">Sin confirmar</button>
+    <button class="filter-btn" onclick="setFilter('quiero', this)">Lo quiero leer</button>
+    <button class="filter-btn" onclick="setFilter('abandonado', this)">Abandonados</button>
+    <button class="filter-btn" onclick="setFilter('visto', this)">Vista adaptación</button>
+    <button class="filter-btn" onclick="setFilter('quiero', this)">Quiero leerlo</button>
+    <button class="filter-btn" onclick="setFilter('abandonado', this)">Abandonados</button>
+    <button class="filter-btn" onclick="setFilter('visto', this)">Vista adaptación</button>
     <select class="sort-select" onchange="sortBooks(this.value)">
       <option value="added">Orden de añadido</option>
       <option value="title">Título A–Z</option>
@@ -686,6 +704,12 @@
             <option value="leido">✓ Leído</option>
             <option value="noleido">✗ No leído</option>
             <option value="dudoso">🤔 No estoy seguro</option>
+            <option value="quiero">🛒 No lo tengo pero lo quiero leer</option>
+            <option value="abandonado">😴 Me aburrí y lo abandoné</option>
+            <option value="visto">🎬 Vista serie/película, no quiero leerlo</option>
+            <option value="quiero">🛒 Lo quiero comprar y leer</option>
+            <option value="abandonado">😴 Me aburrí y lo abandoné</option>
+            <option value="visto">🎬 Vista serie o película, no quiero leerlo</option>
           </select>
         </div>
         <div class="form-group">
@@ -914,6 +938,12 @@ function renderBooks() {
     if (currentFilter === 'pendiente' && b.status !== 'pendiente') return false;
     if (currentFilter === 'noleido' && b.status !== 'noleido') return false;
     if (currentFilter === 'dudoso' && b.status !== 'dudoso') return false;
+    if (currentFilter === 'quiero' && b.status !== 'quiero') return false;
+    if (currentFilter === 'abandonado' && b.status !== 'abandonado') return false;
+    if (currentFilter === 'visto' && b.status !== 'visto') return false;
+    if (currentFilter === 'quiero' && b.status !== 'quiero') return false;
+    if (currentFilter === 'abandonado' && b.status !== 'abandonado') return false;
+    if (currentFilter === 'visto' && b.status !== 'visto') return false;
     if (currentGenre !== 'all' && getCategory(b.genre) !== currentGenre) return false;
     if (query) {
       const inTitle = b.title.toLowerCase().includes(query);
@@ -951,7 +981,8 @@ function renderBooks() {
 
   grid.innerHTML = filtered.map(b => {
     const statusClass = b.status || 'pendiente';
-    const statusLabel = statusClass === 'leido' ? 'Leído' : statusClass === 'leyendo' ? 'Leyendo' : statusClass === 'noleido' ? 'No leído' : statusClass === 'dudoso' ? 'No estoy seguro' : 'Pendiente';
+    const statusLabels = { leido: 'Leído', leyendo: 'Leyendo', pendiente: 'Pendiente', noleido: 'No leído', dudoso: 'Sin confirmar', quiero: 'Quiero leerlo', abandonado: 'Abandonado', visto: 'Vista adaptación' };
+    const statusLabel = statusLabels[statusClass] || 'Pendiente';
     const stars = [1,2,3,4,5].map(i =>
       `<span class="star ${i <= (b.rating||0) ? 'filled' : ''}">★</span>`
     ).join('');
@@ -1142,6 +1173,12 @@ function openDetail(id) {
     <option value="leido" ${b.status==='leido'?'selected':''}>✓ Leído</option>
     <option value="noleido" ${b.status==='noleido'?'selected':''}>✗ No leído</option>
     <option value="dudoso" ${b.status==='dudoso'?'selected':''}>🤔 No estoy seguro</option>
+    <option value="quiero" ${b.status==='quiero'?'selected':''}>🛒 No lo tengo pero lo quiero leer</option>
+    <option value="abandonado" ${b.status==='abandonado'?'selected':''}>😴 Me aburrí y lo abandoné</option>
+    <option value="visto" ${b.status==='visto'?'selected':''}>🎬 Vista serie/película, no quiero leerlo</option>
+    <option value="quiero" ${b.status==='quiero'?'selected':''}>🛒 Lo quiero comprar y leer</option>
+    <option value="abandonado" ${b.status==='abandonado'?'selected':''}>😴 Me aburrí y lo abandoné</option>
+    <option value="visto" ${b.status==='visto'?'selected':''}>🎬 Vista serie o película, no quiero leerlo</option>
   `;
 
   const starsEl = document.getElementById('detailStars');
