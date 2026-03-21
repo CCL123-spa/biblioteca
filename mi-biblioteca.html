@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Biblioteca Personal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f8f8;
+    --surface: #ffffff;
+    --border: #e8e8e8;
+    --border-strong: #d0d0d0;
+    --text: #1a1a1a;
+    --text-secondary: #666666;
+    --text-muted: #999999;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --green: #16a34a;
+    --amber: #d97706;
+    --star: #f59e0b;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .logo span {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 9px 40px 9px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+    outline: none;
+  }
+
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus { background: white; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+
+  .search-icon {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); pointer-events: none; font-size: 1rem;
+  }
+
+  .header-stats {
+    display: flex; gap: 24px; margin-left: auto; flex-shrink: 0;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+    display: block;
+  }
+
+  /* Main layout */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: white;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .sort-select {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    outline: none;
+    margin-left: auto;
+  }
+
+  .add-btn {
+    padding: 7px 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .add-btn:hover { background: var(--accent-hover); }
+
+  /* Book count */
+  .results-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+
+  /* Books grid */
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px;
+  }
+
+  .book-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .book-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .book-spine {
+    height: 3px;
+    background: var(--border);
+  }
+
+  .book-spine.read { background: var(--green); }
+  .book-spine.reading { background: var(--amber); }
+
+  .book-body {
+    padding: 12px;
+  }
+
+  .book-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: 3px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .book-author {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .book-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .stars {
+    display: flex;
+    gap: 1px;
+  }
+
+  .star {
+    font-size: 0.8rem;
+    color: var(--border-strong);
+    cursor: pointer;
+    transition: color 0.1s;
+    line-height: 1;
+  }
+
+  .star.filled { color: var(--star); }
+  .star:hover { color: var(--star); }
+
+  .read-badge {
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .read-badge.leido { background: #dcfce7; color: #15803d; }
+  .read-badge.leyendo { background: #fef3c7; color: #b45309; }
+  .read-badge.pendiente { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+
+  /* Empty state */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-state .big-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.4; }
+  .empty-state h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+    text-align: center;
+    margin-bottom: 28px;
+    transition: all 0.2s;
+    cursor: pointer;
+    background: white;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(37,99,235,0.02);
+  }
+
+  .upload-zone h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .upload-zone p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  .upload-btn-inner {
+    display: inline-block;
+    padding: 8px 20px;
+    background: var(--accent);
+    color: white;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .upload-btn-inner:hover { background: var(--accent-hover); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .modal-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 3px;
+  }
+
+  .modal-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 1.3rem; padding: 4px;
+    flex-shrink: 0; line-height: 1; border-radius: 4px;
+  }
+  .modal-close:hover { background: var(--bg); color: var(--text); }
+
+  .modal-body { padding: 20px 24px 24px; }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+  }
+
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  .stars-input {
+    display: flex; gap: 6px; margin-top: 4px;
+  }
+
+  .star-input {
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: var(--border-strong);
+    transition: color 0.1s;
+    line-height: 1;
+  }
+
+  .star-input.filled { color: var(--star); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .modal-footer {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding-top: 8px;
+  }
+
+  .btn-cancel {
+    padding: 9px 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover { background: var(--bg); }
+
+  .btn-save {
+    padding: 9px 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-save:hover { background: var(--accent-hover); }
+
+  /* AI Processing */
+  .ai-processing {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .ai-processing.visible { display: flex; }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ai-msg {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  /* Divider */
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+
+  /* Book detail modal extras */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .detail-field label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+
+  .detail-field span {
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+
+  .delete-btn {
+    background: none;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-right: auto;
+    transition: all 0.15s;
+  }
+
+  .delete-btn:hover { background: #fee2e2; }
+
+  /* Search highlight */
+  .highlight { background: #fef9c3; border-radius: 2px; }
+
+  .genre-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .genre-btn {
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: white;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .genre-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .genre-btn.active { background: #eff6ff; color: var(--accent); border-color: var(--accent); font-weight: 500; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .header-stats { display: none; }
+    .books-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">Mi<span> Biblioteca</span></div>
+    <div class="search-wrap">
+      <input type="text" class="search-input" id="searchInput" placeholder="Buscar título, autor…" oninput="filterBooks()">
+      <span class="search-icon">⌕</span>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <span class="stat-num" id="statTotal">0</span>
+        <span class="stat-label">Libros</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="statRead">0</span>
+        <span class="stat-label">Leídos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="statAvg">—</span>
+        <span class="stat-label">Media ★</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+    <button class="filter-btn" onclick="setFilter('leido', this)">Leídos</button>
+    <button class="filter-btn" onclick="setFilter('leyendo', this)">Leyendo</button>
+    <button class="filter-btn" onclick="setFilter('pendiente', this)">Pendientes</button>
+    <select class="sort-select" onchange="sortBooks(this.value)">
+      <option value="added">Orden de añadido</option>
+      <option value="title">Título A–Z</option>
+      <option value="author">Autor A–Z</option>
+      <option value="rating">Mejor valoración</option>
+    </select>
+    <button class="add-btn" onclick="openAddModal()">+ Añadir manualmente</button>
+  </div>
+
+  <div class="genre-filters" id="genreFilters"></div>
+
+  <div class="results-info" id="resultsInfo"></div>
+
+  <div class="books-grid" id="booksGrid"></div>
+
+</main>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTitle">Añadir libro</div>
+        <div class="modal-subtitle" id="modalSubtitle">Introduce los datos del libro</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="formContent">
+        <input type="hidden" id="editingId">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Título *</label>
+            <input type="text" class="form-input" id="fTitle" placeholder="El nombre del viento…">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Autor *</label>
+            <input type="text" class="form-input" id="fAuthor" placeholder="Patrick Rothfuss">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Género</label>
+            <input type="text" class="form-input" id="fGenre" placeholder="Fantasía">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Año</label>
+            <input type="number" class="form-input" id="fYear" placeholder="2007">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-select" id="fStatus">
+            <option value="pendiente">📚 Pendiente</option>
+            <option value="leyendo">📖 Leyendo ahora</option>
+            <option value="leido">✓ Leído</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valoración</label>
+          <div class="stars-input" id="starsInput">
+            <span class="star-input" data-v="1" onclick="setRating(1)">★</span>
+            <span class="star-input" data-v="2" onclick="setRating(2)">★</span>
+            <span class="star-input" data-v="3" onclick="setRating(3)">★</span>
+            <span class="star-input" data-v="4" onclick="setRating(4)">★</span>
+            <span class="star-input" data-v="5" onclick="setRating(5)">★</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas personales</label>
+          <textarea class="form-textarea" id="fNotes" placeholder="Tus impresiones, citas favoritas…"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeModal('addModal')">Cancelar</button>
+          <button class="btn-save" onclick="saveBook()">Guardar libro</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Book Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="detailTitle">—</div>
+        <div class="modal-subtitle" id="detailAuthor">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="detailGrid"></div>
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select class="form-select" id="detailStatus" onchange="updateDetailStatus()"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valoración</label>
+        <div class="stars-input" id="detailStars"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea class="form-textarea" id="detailNotes" onchange="updateDetailNotes()" placeholder="Sin notas…"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="delete-btn" onclick="deleteCurrentBook()">🗑 Eliminar</button>
+        <button class="btn-cancel" onclick="closeModal('detailModal')">Cerrar</button>
+        <button class="btn-save" onclick="editCurrentBook()">✏ Editar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Config Google Sheets ────────────────────────────────────────────────────
+const API_URL = 'https://script.google.com/macros/s/AKfycbwl351Kt-AfNiYgysnKHLQ5Q2wBuqlMUZS75KSbrpqBOq3lEZOrPCkz5I8PnBJ3sxG_/exec';
+
+// ─── Data ───────────────────────────────────────────────────────────────────
+let books = [];
+let currentFilter = 'all';
+let currentGenre = 'all';
+let currentSort = 'added';
+let currentDetailId = null;
+let pendingRating = 0;
+let isSaving = false;
+
+// Mapeo de géneros a categorías agrupadas
+const CATEGORY_MAP = {
+  'Ciencia Ficción': 'Ciencia Ficción',
+  'Arquitectura': 'Arquitectura',
+  'Arte': 'Arte',
+  'Ficción': 'Ficción',
+  'Filosofía': 'Filosofía',
+  'Náutica': 'Náutica',
+  'Fotografía': 'Fotografía',
+  'Finanzas': 'Finanzas',
+  'Historia': 'Historia',
+  'Cómic': 'Cómic',
+  'Poesía': 'Poesía',
+  'No ficción': 'No ficción',
+  'Autoayuda': 'Autoayuda',
+  'Thriller': 'Thriller',
+  'Relojería': 'Relojería',
+  'Ingeniería': 'Ingeniería',
+  'Jardinería': 'Jardinería',
+  'Psicología': 'Psicología',
+  'Economía': 'Economía',
+  'Memorias': 'Memorias',
+  'Clásico': 'Clásicos',
+  'Viajes': 'Viajes',
+};
+
+function getCategory(genre) {
+  if (!genre) return null;
+  const parts = genre.split('/').map(s => s.trim());
+  for (const part of parts) {
+    for (const key of Object.keys(CATEGORY_MAP)) {
+      if (part.toLowerCase().includes(key.toLowerCase())) return CATEGORY_MAP[key];
+    }
+  }
+  return parts[0];
+}
+
+function renderGenreFilters() {
+  const counts = {};
+  books.forEach(b => {
+    const cat = getCategory(b.genre);
+    if (cat) counts[cat] = (counts[cat] || 0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  const container = document.getElementById('genreFilters');
+  container.innerHTML = `<button class="genre-btn active" onclick="setGenre('all', this)">Todas las categorías</button>` +
+    sorted.map(([cat, n]) =>
+      `<button class="genre-btn" onclick="setGenre('${cat.replace(/'/g,"\\'")}', this)">${cat} <span style="opacity:0.5;font-size:0.75em">${n}</span></button>`
+    ).join('');
+}
+
+function setGenre(g, btn) {
+  currentGenre = g;
+  document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBooks();
+}
+
+// ─── Google Sheets API ───────────────────────────────────────────────────────
+async function gsPost(payload) {
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  } catch(e) { console.error('Error Sheets:', e); }
+}
+
+async function gsLoad() {
+  showLoading(true);
+  try {
+    const res = await fetch(API_URL + '?t=' + Date.now());
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      // Primera vez: volcar los 432 libros
+      await gsInit();
+    } else {
+      books = rows.map(r => ({
+        id: Number(r.id),
+        title: r.titulo || '',
+        author: r.autor || '',
+        genre: r.genero || '',
+        year: String(r['año'] || ''),
+        status: r.estado || 'pendiente',
+        rating: Number(r.valoracion) || 0,
+        notes: r.notas || ''
+      }));
+    }
+  } catch(e) {
+    console.error('Error cargando:', e);
+    alert('Error al cargar la biblioteca. Comprueba la conexión.');
+  }
+  showLoading(false);
+  renderGenreFilters();
+  renderBooks();
+  renderStats();
+}
+
+async function gsInit() {
+  showLoading(true, 'Cargando tu biblioteca en Google Sheets (primera vez)…');
+  const booksToSend = preloadedBooks.map((b, i) => ({
+    titulo: b.title, autor: b.author, genero: b.genre,
+    'año': b.year, estado: b.status, valoracion: b.rating, notas: b.notes
+  }));
+  await gsPost({ action: 'init', books: booksToSend });
+  await gsLoad();
+}
+
+async function saveBook_gs(book, isNew) {
+  if (isNew) {
+    await gsPost({ action: 'add', book: {
+      titulo: book.title, autor: book.author, genero: book.genre,
+      'año': book.year, estado: book.status, valoracion: book.rating, notas: book.notes
+    }});
+    await gsLoad();
+  } else {
+    await gsPost({ action: 'update', id: book.id, data: {
+      titulo: book.title, autor: book.author, genero: book.genre,
+      'año': book.year, estado: book.status, valoracion: book.rating, notas: book.notes
+    }});
+  }
+}
+
+async function deleteBook_gs(id) {
+  await gsPost({ action: 'delete', id });
+  await gsLoad();
+}
+
+function showLoading(on, msg) {
+  let el = document.getElementById('loadingBar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loadingBar';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:#2563eb;color:white;text-align:center;padding:10px;font-size:0.85rem;font-family:inherit;';
+    document.body.prepend(el);
+  }
+  if (on) {
+    el.textContent = msg || 'Sincronizando con Google Sheets…';
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function save() {
+  renderStats();
+}
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function renderBooks() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  let filtered = books.filter(b => {
+    if (currentFilter === 'leido' && b.status !== 'leido') return false;
+    if (currentFilter === 'leyendo' && b.status !== 'leyendo') return false;
+    if (currentFilter === 'pendiente' && b.status !== 'pendiente') return false;
+    if (currentGenre !== 'all' && getCategory(b.genre) !== currentGenre) return false;
+    if (query) {
+      const inTitle = b.title.toLowerCase().includes(query);
+      const inAuthor = b.author.toLowerCase().includes(query);
+      return inTitle || inAuthor;
+    }
+    return true;
+  });
+
+  // Sort
+  if (currentSort === 'title') filtered.sort((a,b) => a.title.localeCompare(b.title));
+  else if (currentSort === 'author') filtered.sort((a,b) => a.author.localeCompare(b.author));
+  else if (currentSort === 'rating') filtered.sort((a,b) => (b.rating||0) - (a.rating||0));
+  else filtered.sort((a,b) => b.id - a.id);
+
+  const grid = document.getElementById('booksGrid');
+  const info = document.getElementById('resultsInfo');
+
+  if (query) {
+    info.textContent = `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''} para "${query}"`;
+  } else if (currentFilter !== 'all') {
+    info.textContent = `${filtered.length} libro${filtered.length !== 1 ? 's' : ''} ${currentFilter === 'leido' ? 'leídos' : currentFilter === 'leyendo' ? 'en curso' : 'pendientes'}`;
+  } else {
+    info.textContent = `${filtered.length} libro${filtered.length !== 1 ? 's' : ''} en tu biblioteca`;
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="big-icon">📚</div>
+      <h3>${books.length === 0 ? 'Tu biblioteca está vacía' : 'Sin resultados'}</h3>
+      <p>${books.length === 0 ? 'Sube una fotografía de tu estantería para empezar' : 'Prueba con otro término de búsqueda'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(b => {
+    const statusClass = b.status || 'pendiente';
+    const statusLabel = statusClass === 'leido' ? 'Leído' : statusClass === 'leyendo' ? 'Leyendo' : 'Pendiente';
+    const stars = [1,2,3,4,5].map(i =>
+      `<span class="star ${i <= (b.rating||0) ? 'filled' : ''}">★</span>`
+    ).join('');
+
+    let titleHtml = escHtml(b.title);
+    let authorHtml = escHtml(b.author);
+    if (query) {
+      titleHtml = highlight(titleHtml, query);
+      authorHtml = highlight(authorHtml, query);
+    }
+
+    return `<div class="book-card" onclick="openDetail(${b.id})">
+      <div class="book-spine ${statusClass}"></div>
+      <div class="book-body">
+        <div class="book-title">${titleHtml}</div>
+        <div class="book-author">${authorHtml}</div>
+        <div class="book-footer">
+          <div class="stars">${stars}</div>
+          <span class="read-badge ${statusClass}">${statusLabel}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent = books.length;
+  document.getElementById('statRead').textContent = books.filter(b => b.status === 'leido').length;
+  const rated = books.filter(b => b.rating > 0);
+  if (rated.length > 0) {
+    const avg = rated.reduce((s,b) => s + b.rating, 0) / rated.length;
+    document.getElementById('statAvg').textContent = avg.toFixed(1);
+  } else {
+    document.getElementById('statAvg').textContent = '—';
+  }
+}
+
+function filterBooks() { renderBooks(); }
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBooks();
+}
+
+function sortBooks(v) {
+  currentSort = v;
+  renderBooks();
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function highlight(str, q) {
+  const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return str.replace(regex, '<span class="highlight">$1</span>');
+}
+
+// ─── Add/Edit ─────────────────────────────────────────────────────────────────
+function openAddModal() {
+  pendingRating = 0;
+  document.getElementById('editingId').value = '';
+  document.getElementById('modalTitle').textContent = 'Añadir libro';
+  document.getElementById('modalSubtitle').textContent = 'Introduce los datos del libro';
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fAuthor').value = '';
+  document.getElementById('fGenre').value = '';
+  document.getElementById('fYear').value = '';
+  document.getElementById('fStatus').value = 'pendiente';
+  document.getElementById('fNotes').value = '';
+  updateStarsUI(0, 'starsInput');
+  openModal('addModal');
+}
+
+function saveBook() {
+  const title = document.getElementById('fTitle').value.trim();
+  const author = document.getElementById('fAuthor').value.trim();
+  if (!title) { alert('El título es obligatorio'); return; }
+
+  const editId = parseInt(document.getElementById('editingId').value);
+  const bookData = {
+    title,
+    author: author || 'Autor desconocido',
+    genre: document.getElementById('fGenre').value.trim(),
+    year: document.getElementById('fYear').value.trim(),
+    status: document.getElementById('fStatus').value,
+    rating: pendingRating,
+    notes: document.getElementById('fNotes').value.trim(),
+  };
+
+  if (editId) {
+    const idx = books.findIndex(b => b.id === editId);
+    if (idx !== -1) {
+      books[idx] = { ...books[idx], ...bookData };
+      saveBook_gs(books[idx], false);
+    }
+  } else {
+    const newBook = { id: Date.now(), ...bookData };
+    books.push(newBook);
+    saveBook_gs(newBook, true);
+  }
+
+  save();
+  renderGenreFilters();
+  renderBooks();
+  closeModal('addModal');
+}
+
+function setRating(v) {
+  pendingRating = v;
+  updateStarsUI(v, 'starsInput');
+}
+
+function updateStarsUI(rating, containerId) {
+  document.querySelectorAll(`#${containerId} .star-input`).forEach(s => {
+    s.classList.toggle('filled', parseInt(s.dataset.v) <= rating);
+  });
+}
+
+// ─── Detail ──────────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) return;
+  currentDetailId = id;
+
+  document.getElementById('detailTitle').textContent = b.title;
+  document.getElementById('detailAuthor').textContent = b.author;
+
+  const grid = document.getElementById('detailGrid');
+  grid.innerHTML = `
+    ${b.genre ? `<div class="detail-field"><label>Género</label><span>${escHtml(b.genre)}</span></div>` : ''}
+    ${b.year ? `<div class="detail-field"><label>Año</label><span>${escHtml(b.year)}</span></div>` : ''}
+  `;
+
+  const statusEl = document.getElementById('detailStatus');
+  statusEl.innerHTML = `
+    <option value="pendiente" ${b.status==='pendiente'?'selected':''}>📚 Pendiente</option>
+    <option value="leyendo" ${b.status==='leyendo'?'selected':''}>📖 Leyendo ahora</option>
+    <option value="leido" ${b.status==='leido'?'selected':''}>✓ Leído</option>
+  `;
+
+  const starsEl = document.getElementById('detailStars');
+  starsEl.innerHTML = [1,2,3,4,5].map(i =>
+    `<span class="star-input ${i <= (b.rating||0) ? 'filled' : ''}" data-v="${i}" onclick="setDetailRating(${i})">★</span>`
+  ).join('');
+
+  document.getElementById('detailNotes').value = b.notes || '';
+  openModal('detailModal');
+}
+
+function updateDetailStatus() {
+  const b = books.find(x => x.id === currentDetailId);
+  if (b) { b.status = document.getElementById('detailStatus').value; save(); renderBooks(); saveBook_gs(b, false); }
+}
+
+function updateDetailNotes() {
+  const b = books.find(x => x.id === currentDetailId);
+  if (b) { b.notes = document.getElementById('detailNotes').value; save(); saveBook_gs(b, false); }
+}
+
+function setDetailRating(v) {
+  const b = books.find(x => x.id === currentDetailId);
+  if (b) { b.rating = v; save(); renderBooks(); saveBook_gs(b, false); }
+  document.querySelectorAll('#detailStars .star-input').forEach(s => {
+    s.classList.toggle('filled', parseInt(s.dataset.v) <= v);
+  });
+}
+
+function deleteCurrentBook() {
+  const b = books.find(x => x.id === currentDetailId);
+  if (!b) return;
+  if (!confirm(`¿Eliminar "${b.title}"?`)) return;
+  const delId = currentDetailId;
+  books = books.filter(x => x.id !== delId);
+  save(); renderGenreFilters(); renderBooks(); closeModal('detailModal');
+  deleteBook_gs(delId);
+}
+
+function editCurrentBook() {
+  const b = books.find(x => x.id === currentDetailId);
+  if (!b) return;
+  closeModal('detailModal');
+  pendingRating = b.rating || 0;
+  document.getElementById('editingId').value = b.id;
+  document.getElementById('modalTitle').textContent = 'Editar libro';
+  document.getElementById('modalSubtitle').textContent = b.title;
+  document.getElementById('fTitle').value = b.title;
+  document.getElementById('fAuthor').value = b.author;
+  document.getElementById('fGenre').value = b.genre || '';
+  document.getElementById('fYear').value = b.year || '';
+  document.getElementById('fStatus').value = b.status || 'pendiente';
+  document.getElementById('fNotes').value = b.notes || '';
+  updateStarsUI(pendingRating, 'starsInput');
+  openModal('addModal');
+}
+
+// ─── Modal helpers ────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+const preloadedBooks = [
+    // Foto 1
+    { title: "Los asesinos", author: "Elia Kazan", genre: "Ficción", year: "1972", status: "pendiente", rating: 0, notes: "Editorial Pomaire" },
+    { title: "Crimen y castigo", author: "F. Dostoiewski", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Colección Z, nº110-111" },
+    // Foto 2 - Jardinería / Arte / Técnica
+    { title: "L'Encyclopédie Flammarion du Jardin", author: "Alain Baraton", genre: "Jardinería", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "L'encyclopédie - Créer", author: "Desconocido", genre: "Jardinería", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Cultivo y cuidados de las plantas de interior", author: "Gesal", genre: "Jardinería", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Conozca sus plantas", author: "Gesal", genre: "Jardinería", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Diseño de jardines", author: "Herwig / Stehling", genre: "Jardinería", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "350 Plantas de jardín en color", author: "Rob Herwig", genre: "Jardinería", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Constitución Española", author: "Senado", genre: "Derecho", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Todo sobre la técnica del acrílico", author: "Parramón", genre: "Arte / Pintura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Guía completa para el artista", author: "Parramón", genre: "Arte / Pintura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Todo sobre las técnicas secas", author: "Hazel Harrison", genre: "Arte / Pintura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Escuela de acuarela", author: "Ian Smith", genre: "Arte / Pintura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Dibujar y abocetar", author: "Patricia Monahan", genre: "Arte / Dibujo", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Pintar al óleo", author: "José M. Parramón", genre: "Arte / Pintura", year: "", status: "pendiente", rating: 0, notes: "Colección Parramón" },
+    { title: "Contratos Mercantiles 2019-2020", author: "Memento / Francis Lefebvre", genre: "Derecho / Empresa", year: "2019", status: "pendiente", rating: 0, notes: "" },
+    { title: "Diccionario Italiano Collins Gem", author: "Collins", genre: "Diccionario", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 3
+    { title: "El sutil arte de que (casi casi) todo te importe una mierda", author: "Mark Manson", genre: "Autoayuda", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La habitación vacía", author: "Emily White", genre: "No ficción / Psicología", year: "", status: "pendiente", rating: 0, notes: "Sobre la soledad crónica" },
+    { title: "Del conocimiento", author: "David Hume", genre: "Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Gran historia visual de la filosofía", author: "Masato Tanaka", genre: "Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "No me acuerdo de nada", author: "Nora Ephron", genre: "Ensayo / Humor", year: "", status: "pendiente", rating: 0, notes: "Libros del Asteroide" },
+    { title: "La adopción explicada a mis hijos", author: "Fernando Baeta", genre: "No ficción / Familia", year: "", status: "pendiente", rating: 0, notes: "Debolsillo" },
+    { title: "El poder de la mente y sus secretos", author: "Harry Lorayne", genre: "Psicología / Autoayuda", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Reaccionados", author: "Varios Autores (coord. Federico Mayor Zaragoza)", genre: "Política / Sociedad", year: "2015", status: "pendiente", rating: 0, notes: "" },
+    { title: "Ensayo sobre la ceguera", author: "José Saramago", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Tu mundo y el mío", author: "John Green", genre: "Ficción / Juvenil", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El Contrato Social", author: "Jean-Jacques Rousseau", genre: "Filosofía / Política", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El consentimiento", author: "Vanessa Springora", genre: "Memorias", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El arte de amar", author: "Erich Fromm", genre: "Psicología / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "The Playbook", author: "Barney Stinson / Matt Kuhn", genre: "Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "De la familia al individuo", author: "Murray Bowen", genre: "Psicología", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Las mujeres que leen son peligrosas", author: "Stefan Bollmann", genre: "No ficción / Arte", year: "", status: "pendiente", rating: 0, notes: "Maeva. Libro ilustrado" },
+    { title: "Mamá", author: "Margarita del Mazo / Silvia Álvarez", genre: "Literatura", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 4
+    { title: "Los cuentos de Avi Jaume", author: "Avi Jaume", genre: "Cuentos", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El fango", author: "Baltasar Garzón", genre: "No ficción / Política", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Introducción al psicoanálisis", author: "Sigmund Freud", genre: "Psicología / Psicoanálisis", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Así habló Zaratustra", author: "Nietzsche", genre: "Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El arte de la guerra", author: "Sun Tzu", genre: "Filosofía / Estrategia", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Principios elementales y fundamentales de filosofía", author: "Georges Politzer", genre: "Filosofía", year: "", status: "pendiente", rating: 0, notes: "Akal. Filosofía marxista" },
+    { title: "Gabo y Fidel", author: "Ángel Esteban / Stéphanie Fanichelli", genre: "Biografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Aristóteles - Obras", author: "Aristóteles", genre: "Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Política", author: "Aristóteles", genre: "Filosofía / Política", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 5
+    { title: "The Bro Code", author: "Barney Stinson / Matt Kuhn", genre: "Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El discurso del Método", author: "René Descartes", genre: "Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Hagakure - El camino del samurái", author: "Yamamoto Tsunetomo", genre: "Filosofía / Clásico japonés", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La energía liberada", author: "Rosa María Artal", genre: "No ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "¿Y si adoptamos?", author: "Meritxell Pacheco / Berta Boadas", genre: "No ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Feminicidio", author: "Graciela Atencio (ed.)", genre: "No ficción / Sociología", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El exterminio de la memoria", author: "Violeta Friedman", genre: "Historia", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Mis memorias", author: "Fernando I. Lizundia", genre: "Memorias", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La ecuación de Dios", author: "Michio Kaku", genre: "Ciencia / Divulgación", year: "2022", status: "pendiente", rating: 0, notes: "" },
+    { title: "Focus", author: "Desconocido", genre: "Autoayuda / Desarrollo personal", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "The Seven Spiritual Laws of Success", author: "Deepak Chopra", genre: "Autoayuda / Espiritualidad", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Historia del Comunismo", author: "Richard Pipes", genre: "Historia / Política", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Cauterio", author: "Lucía Lijtmaer", genre: "Ficción", year: "2022", status: "pendiente", rating: 0, notes: "Anagrama" },
+    { title: "Un regalo para toda la vida", author: "Carlos González", genre: "Crianza / Salud", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Out of Gaza: New Palestinian Poetry", author: "Atef Alshaer / Alan Morrison (eds.)", genre: "Poesía / Antología", year: "2024", status: "pendiente", rating: 0, notes: "Smokestack Books. 15 poetas palestinos" },
+    { title: "El libro rojo y negro / Marx y Engels", author: "Marx / Engels", genre: "Política / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Le petit livre des 80s", author: "Gilles Guilleron", genre: "Cultura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Man's Best Friend", author: "Gray Jolliffe / Peter Mayle", genre: "Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Business as Usual", author: "Richard Branson", genre: "Empresa / Biografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Guía para invertir", author: "Robert T. Kiyosaki", genre: "Finanzas / Inversión", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 6 - Finanzas / Inversión
+    { title: "Security Analysis", author: "Benjamin Graham / David L. Dodd", genre: "Finanzas / Inversión", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El inversor inteligente", author: "Benjamin Graham", genre: "Finanzas / Inversión", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Bolsa para Dummies", author: "Jorge Pérez Ajram", genre: "Finanzas / Inversión", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Powerhouse Principles", author: "Jorge Pérez", genre: "Finanzas / Empresa", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Piense y hágase rico", author: "Napoleon Hill", genre: "Autoayuda / Finanzas", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Capitalismo Big Tech", author: "Evgeny Morozov", genre: "Economía / Política", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El hombre más rico de Babilonia", author: "George S. Clason", genre: "Finanzas / Autoayuda", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El pequeño libro que bate al mercado", author: "Joel Greenblatt", genre: "Finanzas / Inversión", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Un paso por delante de Wall Street", author: "Peter Lynch", genre: "Finanzas / Inversión", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La crisis del capitalismo global", author: "George Soros", genre: "Economía / Política", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Padre Rico, Padre Pobre", author: "Robert T. Kiyosaki", genre: "Finanzas / Autoayuda", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El capital en el siglo XXI", author: "Thomas Piketty", genre: "Economía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La inversión en productos inmobiliarios", author: "Ramon Amargant", genre: "Finanzas / Inversión", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El economista camuflado", author: "Tim Harford", genre: "Economía", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 7 - Fotografía artística
+    { title: "Personal Best", author: "Elliott Erwitt", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Eugène Atget", author: "Eugène Atget", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Fotografía Creativa (Kodak)", author: "Kodak", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Fotografías magistrales", author: "Salvat", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La subversión de las imágenes", author: "Desconocido", genre: "Fotografía / Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Photographs", author: "John Gutmann", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Lisette Model", author: "Lisette Model", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Michelangelo Antonioni", author: "Michelangelo Antonioni", genre: "Cine / Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 8 - Fotografía técnica
+    { title: "La clave de la fotografía (Kodak)", author: "Kodak", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Toda la fotografía", author: "Michael Freeman", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Preguntas y respuestas en fotografía", author: "Ediciones Libsa", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Diccionario del cine", author: "Ediciones Rialp", genre: "Cine", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Curso profesional de fotografía - Vol. 2", author: "Planeta DeAgostini", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Curso profesional de fotografía - Vol. 4", author: "Planeta DeAgostini", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Curso profesional de fotografía - Vol. 5", author: "Planeta DeAgostini", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Curso profesional de fotografía - Vol. 6", author: "Planeta DeAgostini", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Curso profesional de fotografía - Vol. 7", author: "Planeta DeAgostini", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Curso profesional de fotografía - Vol. 8", author: "Planeta DeAgostini", genre: "Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 9 - Ficción variada
+    { title: "Before I Go to Sleep", author: "S.J. Watson", genre: "Thriller / Suspense", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Fuerteventura", author: "Alberto Vázquez-Figueroa", genre: "Ficción / Aventura / Historia", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Firmin", author: "Sam Savage", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El maravilloso viaje de Nils Holgersson", author: "Selma Lagerlöf", genre: "Clásico / Juvenil", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El crimen de lord Arthur Savile", author: "Oscar Wilde", genre: "Clásico / Relatos", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Así empieza lo malo", author: "Javier Marías", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Albina y los hombres-perro", author: "Alejandro Jodorowsky", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Thirteen Ways of Looking", author: "Colum McCann", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Las que no duermen NASH", author: "Dolores Redondo", genre: "Thriller / Novela negra", year: "2024", status: "pendiente", rating: 0, notes: "Ediciones Destino. Los Valles Tranquilos nº2" },
+    { title: "Casi nada que ponerte", author: "Lucía Lijtmaer", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La paciente silenciosa", author: "Alex Michaelides", genre: "Thriller / Suspense", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Alvarez: Adventures of a Physicist", author: "Luis W. Alvarez", genre: "Ciencia / Autobiografía", year: "1987", status: "pendiente", rating: 0, notes: "" },
+    { title: "El principito", author: "Antoine de Saint-Exupéry", genre: "Clásico / Fábula", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Zen y el arte del mantenimiento de la motocicleta", author: "Robert M. Pirsig", genre: "Filosofía / Novela", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Lila", author: "Robert M. Pirsig", genre: "Filosofía / Novela", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 10 - Literatura clásica y poesía
+    { title: "El proceso", author: "Franz Kafka", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Mi familia y otros animales", author: "Gerald Durrell", genre: "Memorias / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Bichos y demás parientes", author: "Gerald Durrell", genre: "Memorias / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El jardín de los dioses", author: "Gerald Durrell", genre: "Memorias / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Novelas ejemplares (Cervantes, varios vols.)", author: "Cervantes", genre: "Clásico Español", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La muerte en Venecia", author: "Thomas Mann", genre: "Clásico / Novela", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La tormenta de cristal", author: "Pedro Torrijos", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Cartero", author: "Charles Bukowski", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Las Escritoras de Urras — Año 1", author: "VV.AA.", genre: "Ciencia Ficción / Antología", year: "", status: "pendiente", rating: 0, notes: "Antología del podcast feminista de CF. Autoras latinoamericanas y anglófonas" },
+    { title: "Antes que anochezca", author: "Reinaldo Arenas", genre: "Memorias", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Kafka sur le rivage", author: "Haruki Murakami", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Poemas", author: "Pablo Neruda", genre: "Poesía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Poemas de amor y una canción desesperada", author: "Pablo Neruda", genre: "Poesía", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 11 - Clásicos y literatura
+    { title: "La sonrisa etrusca", author: "José Luis Sampedro", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Obra completa", author: "Khalil Gibran", genre: "Poesía / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La soledad", author: "Natalio Grueso", genre: "Ensayo / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Fausto", author: "Goethe", genre: "Clásico / Teatro", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El Aleph", author: "Jorge Luis Borges", genre: "Cuentos / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Las pequeñas memorias", author: "José Saramago", genre: "Memorias", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El otoño del patriarca", author: "Gabriel García Márquez", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La tentación de l'Occident", author: "Malraux", genre: "Ensayo / Novela", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Eugénie Grandet", author: "Balzac", genre: "Clásico / Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Utopía", author: "Tomás Moro", genre: "Clásico / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Ojos de perro azul", author: "Gabriel García Márquez", genre: "Cuentos", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "L'Age de raison", author: "J.-P. Sartre", genre: "Filosofía / Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Rayuela", author: "Julio Cortázar", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 12 / 13
+    { title: "Historias de la piratería", author: "Alberto Cousté", genre: "Historia", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El viejo y el mar", author: "Ernest Hemingway", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Intemperie", author: "Jesús Carrasco", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Carter", author: "Ted Lewis", genre: "Ficción / Noir", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Este sueño está patrocinado", author: "Pedro Pablo Picazo", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Trois hommes dans un bateau", author: "Jerome K. Jerome", genre: "Clásico / Humor", year: "", status: "pendiente", rating: 0, notes: "En francés" },
+    { title: "Harry Potter y la piedra filosofal", author: "J.K. Rowling", genre: "Fantasía / Juvenil", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El fantasma de Canterville", author: "Oscar Wilde", genre: "Clásico / Relatos", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Por el camino de Swann", author: "Marcel Proust", genre: "Clásico / Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El otoño del patriarca", author: "Gabriel García Márquez", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Segunda edición" },
+    { title: "El retrato de Dorian Gray", author: "Oscar Wilde", genre: "Clásico / Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Biografía del diablo", author: "Alberto Cousté", genre: "Historia / Ensayo", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 14
+    { title: "Ulises II", author: "James Joyce", genre: "Clásico / Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Cuéntamelo otra vez", author: "Varios Autores", genre: "Cuentos / Antología", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El déspota adolescente", author: "Lorenzo Silva", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Don Juan / Tartufo", author: "Molière", genre: "Clásico / Teatro", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El diario de Ana Frank", author: "Ana Frank", genre: "Memorias / Historia", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Erecciones, eyaculaciones, exhibiciones", author: "Charles Bukowski", genre: "Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El guardián entre el centeno", author: "J.D. Salinger", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Diarios de motocicleta", author: "Ernesto Che Guevara", genre: "Memorias", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Azul", author: "Rubén Darío", genre: "Poesía / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Por quién doblan las campanas", author: "Hemingway", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El amor en los tiempos del cólera", author: "Gabriel García Márquez", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La fortuna de Matilda Turpin", author: "Álvaro Pombo", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Desde mi celda", author: "Gustavo Adolfo Bécquer", genre: "Clásico / Literatura", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 15
+    { title: "La catedral del mar", author: "Ildefonso Falcones", genre: "Ficción Histórica", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El infierno", author: "Henri Barbusse", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Cuentos completos I", author: "Julio Cortázar", genre: "Cuentos / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Las Escritoras de Urras — Año 2", author: "VV.AA.", genre: "Ciencia Ficción / Antología", year: "", status: "pendiente", rating: 0, notes: "Antología del podcast feminista de CF. Autoras latinoamericanas y anglófonas" },
+    { title: "Ve y pon un centinela", author: "Harper Lee", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 16 - Arte
+    { title: "Miguel Ángel - Escultura, Pintura, Arquitectura", author: "Desconocido", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Cataluña - Arte, Paisaje, Arquitectura", author: "Barbara Borngässer", genre: "Arte / Arquitectura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Impresionismo", author: "Desconocido", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Picasso (Fundación Juan March 2003-2004)", author: "Picasso / Fundación Juan March", genre: "Arte", year: "2003", status: "pendiente", rating: 0, notes: "" },
+    { title: "Kandinsky: origen de la abstracción", author: "Desconocido", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La danza de los colores: En torno a Nijinsky y la abstracción", author: "Desconocido", genre: "Arte / Danza", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Georges Braque", author: "Georges Braque", genre: "Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Impresionismo americano", author: "Desconocido", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Jan Vermeer", author: "Norbert Schneider", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "Taschen Basic Art" },
+    { title: "Modernismo", author: "Klaus-Jürgen Sembach", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "Taschen. Art Nouveau" },
+    { title: "Klimt", author: "Gottfried Fliedl", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "Taschen Basic Art" },
+    { title: "Kandinsky", author: "Ulrike Becks-Malorny", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "Taschen Basic Art" },
+    { title: "Francis Bacon", author: "Luigi Ficacci", genre: "Arte", year: "", status: "pendiente", rating: 0, notes: "Taschen Basic Art" },
+    { title: "Rothko: The Color Field Paintings", author: "Christopher Rothko (pról.) / Janet Bishop (ensayo)", genre: "Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Blanche Odin / Ulpiano Checa - 1890 La Rencontre 1916", author: "Musée Salies - Bagnères-de-Bigorre", genre: "Arte / Catálogo exposición", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 17 - Arte (continuación)
+    { title: "Banksy - Wall and Piece", author: "Banksy", genre: "Arte / Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Leer la pintura", author: "Larousse", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Rodin - Precursor de la escultura moderna", author: "Paz García Ponce de León", genre: "Arte / Escultura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "WOW! The Heidi Horten Collection", author: "Heidi Horten Collection", genre: "Arte / Catálogo colección", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El cubismo en España", author: "Desconocido", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Bauhaus", author: "Magdalena Droste", genre: "Arte / Diseño", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Pablo Palazuelo - Catálogo Razonado", author: "Fundación Azcona / Museo Reina Sofía", genre: "Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 18
+    { title: "San Camilo 1936", author: "Camilo José Cela", genre: "Ficción / Clásico", year: "1936", status: "pendiente", rating: 0, notes: "" },
+    { title: "Las partículas elementales", author: "Michel Houellebecq", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "The Other Side of the Story", author: "Marian Keyes", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Alas rotas", author: "Khalil Gibran", genre: "Poesía / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La sangre de los inocentes", author: "Julia Navarro", genre: "Ficción / Thriller", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Nuestro hombre en La Habana", author: "Graham Greene", genre: "Ficción / Espionaje", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Aquello estaba deseando ocurrir", author: "Leonardo Padura", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Un descanso para los muertos y otros relatos", author: "Lucy Taylor", genre: "Terror / Relatos", year: "2019", status: "pendiente", rating: 0, notes: "Editorial Pulpture" },
+    { title: "En el camino", author: "Jack Kerouac", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La caverna", author: "José Saramago", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Corazón tan blanco", author: "Javier Marías", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Histoire de la Révolution Française - Tome II", author: "Mignet", genre: "Historia", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Han d'Islande", author: "Victor Hugo", genre: "Clásico / Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "The Prophet", author: "Khalil Gibran", genre: "Poesía / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La isla inaudita", author: "Eduardo Mendoza", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Noces suivi de L'été", author: "Albert Camus", genre: "Ensayo / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Un lugar llamado Antaño", author: "Tokarczuk", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 19
+    { title: "La broma infinita", author: "David Foster Wallace", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Ulises I", author: "James Joyce", genre: "Clásico / Ficción", year: "", status: "pendiente", rating: 0, notes: "RBA Clásicos del Siglo XX" },
+    { title: "El invierno en Lisboa", author: "Antonio Muñoz Molina", genre: "Ficción / Novela negra", year: "1987", status: "pendiente", rating: 0, notes: "Premio Nacional Literatura 1988" },
+    { title: "Obra completa - Vol. 1", author: "Khalil Gibran", genre: "Poesía / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Obra completa - Vol. 2", author: "Khalil Gibran", genre: "Poesía / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El profeta / El loco / El vagabundo", author: "Gibran Jalil Gibran", genre: "Poesía / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Lejos de Luisiana", author: "Luz Gabás", genre: "Ficción Histórica", year: "2022", status: "pendiente", rating: 0, notes: "Premio Planeta 2022" },
+    { title: "La desaparición de Stephanie Mailer", author: "Joël Dicker", genre: "Thriller", year: "2018", status: "pendiente", rating: 0, notes: "Alfaguara" },
+    // Foto 20
+    { title: "Los europeos", author: "Henry James", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El grito de la lechuza", author: "Patricia Highsmith", genre: "Thriller / Suspense", year: "", status: "pendiente", rating: 0, notes: "Anagrama" },
+    { title: "La galería del ruiseñor", author: "Paul Harding (Paul C. Doherty)", genre: "Ficción Histórica / Misterio", year: "", status: "pendiente", rating: 0, notes: "Serie Fray Athelstan nº1" },
+    { title: "El coronel no tiene quien le escriba", author: "Gabriel García Márquez", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El espía que surgió del frío", author: "John Le Carré", genre: "Ficción / Espionaje", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El Topo", author: "John Le Carré", genre: "Ficción / Espionaje", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Un espía perfecto", author: "John Le Carré", genre: "Ficción / Espionaje", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Pedro Páramo", author: "Juan Rulfo", genre: "Ficción / Clásico", year: "1955", status: "pendiente", rating: 0, notes: "Cátedra, Letras Hispánicas" },
+    // ── SEGUNDO LOTE DE FOTOS ──────────────────────────────────────────────────
+    // Foto 1 - Arte español
+    { title: "Saura", author: "Antonio Saura", genre: "Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Chillida", author: "Eduardo Chillida", genre: "Arte / Escultura", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 2 - Arte
+    { title: "Arte abstracto", author: "Dietmar Elger", genre: "Arte / Historia del Arte", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Art moderne et contemporain", author: "Amy Dempsey", genre: "Arte", year: "", status: "pendiente", rating: 0, notes: "Flammarion, L'Art en Poche" },
+    { title: "Van Gogh - La obra completa: pintura", author: "Ingo F. Walther / Rainer Metzger", genre: "Arte", year: "", status: "pendiente", rating: 0, notes: "Taschen, edición 25 aniversario" },
+    { title: "The EY Exhibition: Picasso 1932", author: "Desconocido", genre: "Arte / Catálogo exposición", year: "1932", status: "pendiente", rating: 0, notes: "25 postcards" },
+    // Foto 3 - Género / Feminismo
+    { title: "Historia del arte sin hombres", author: "Katy Hessel", genre: "Arte / Género", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Feminist Art", author: "Valentina Grande / Eva Rossetti", genre: "Arte / Género", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Ni musas ni sumisas", author: "Helena Sotoca García (@femme.sapiens)", genre: "Arte / Ensayo / Género", year: "2022", status: "pendiente", rating: 0, notes: "Bruguera. Revisión ilustrada de la historia del arte occidental con perspectiva feminista" },
+    // Foto 4 - Arquitectura
+    { title: "100 años de dibujos de arquitectura 1900-2000", author: "Neil Bingham", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "New York: Architectural Guide", author: "Vladimir Belogolovsky", genre: "Arquitectura", year: "2019", status: "pendiente", rating: 0, notes: "DOM Publishers" },
+    { title: "Teoría de la arquitectura - Del Renacimiento a la actualidad", author: "Taschen", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Animales arquitectos", author: "Juhani Pallasmaa", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "GG" },
+    { title: "Walter Gropius", author: "Gilles Néret", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Auguste Rodin", author: "Desconocido", genre: "Arte / Escultura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    // Foto 5 - Ficción clásica
+    { title: "Las uvas de la ira", author: "John Steinbeck", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La locura de Almayer", author: "Joseph Conrad", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El corazón de las tinieblas", author: "Joseph Conrad", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Archipiélago Gulag Vol. 1 (1918-1956)", author: "Alexandr Solzhenitsyn", genre: "Historia / No ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Archipiélago Gulag Vol. 2 (1918-1956)", author: "Alexandr Solzhenitsyn", genre: "Historia / No ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Un día en la vida de Iván Denísovich", author: "Aleksandr Solzhenitsyn", genre: "Ficción / Historia", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Por el bien de la causa", author: "Aleksandr Solzhenitsyn", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Un hombre", author: "Oriana Fallaci", genre: "No ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Inshallah", author: "Oriana Fallaci", genre: "No ficción / Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Carta a un niño que no llegó a nacer", author: "Oriana Fallaci", genre: "No ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La colmena", author: "Camilo José Cela", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La familia de Pascual Duarte", author: "Camilo José Cela", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El talento de Mr. Ripley", author: "Patricia Highsmith", genre: "Thriller / Suspense", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Los pasos perdidos", author: "Alejo Carpentier", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 6 - Ficción clásica
+    { title: "La Divina Comedia", author: "Dante Alighieri", genre: "Poesía / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La condición humana", author: "André Malraux", genre: "Ficción / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El gran Gatsby", author: "F. Scott Fitzgerald", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Orbis, Grandes Éxitos nº2" },
+    { title: "Dublineses", author: "James Joyce", genre: "Cuentos / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La tabla de Flandes", author: "Arturo Pérez-Reverte", genre: "Ficción / Thriller", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El quinto evangelio", author: "Philipp Vandenberg", genre: "Ficción / Thriller", year: "", status: "pendiente", rating: 0, notes: "Editorial Planeta/Booket" },
+    { title: "Cinco horas con Mario", author: "Miguel Delibes", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Crónica del rey pasmado", author: "Gonzalo Torrente Ballester", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La metamorfosis y otros relatos", author: "Franz Kafka", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El jugador", author: "Fedor Dostoievski", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Las luces de Septiembre", author: "Carlos Ruiz Zafón", genre: "Ficción / Juvenil", year: "1995", status: "pendiente", rating: 0, notes: "Trilogía de la Niebla nº3" },
+    { title: "La saga / fuga de J.B.", author: "Gonzalo Torrente Ballester", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Niebla", author: "Miguel de Unamuno", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La náusea", author: "Jean-Paul Sartre", genre: "Ficción / Filosofía", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 7 - Clásicos
+    { title: "El ruido y la furia", author: "William Faulkner", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "RBA, Clásicos del Siglo XX nº5" },
+    { title: "La esperanza", author: "André Malraux", genre: "Ficción / Historia", year: "1937", status: "pendiente", rating: 0, notes: "El País nº23. Novela sobre la Guerra Civil española" },
+    { title: "Los conquistadores", author: "André Malraux", genre: "Ficción / Historia", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 8 - Arquitectura
+    { title: "Arquitectura moderna de la A a la Z - Vol. 1", author: "Taschen", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Arquitectura moderna de la A a la Z - Vol. 2", author: "Taschen", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Sáenz de Oíza. Artes y oficios", author: "VV.AA. / Fundación ICO", genre: "Arquitectura", year: "2020", status: "pendiente", rating: 0, notes: "Catálogo exposición Museo ICO" },
+    { title: "Dominique Perrault Architecture", author: "Dominique Perrault", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "T.F. Editores, castellano/inglés" },
+    { title: "Gaudí", author: "Juan-Eduardo Cirlot (texto) / Pere Vivas & Ricard Pla (fotografías)", genre: "Arquitectura / Arte", year: "", status: "pendiente", rating: 0, notes: "Triangle Postals" },
+    { title: "Obra completa de Antoni Gaudí", author: "Antoni Gaudí", genre: "Arquitectura / Arte", year: "", status: "pendiente", rating: 0, notes: "Editorial Dosde" },
+    { title: "Historia de la arquitectura moderna", author: "Prestinenza Puglisi", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "nº102" },
+    { title: "The History of Architecture", author: "Prestinenza Puglisi", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "nº101" },
+    { title: "Historia crítica de la arquitectura moderna", author: "Kenneth Frampton", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Editorial GG" },
+    { title: "Barcelona Retro", author: "Oscar Dalmau", genre: "Arquitectura / Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "101 cosas que aprender en la escuela de arquitectura", author: "Matthew Frederick", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Blume, nº134" },
+    // Foto 12 - Arquitectura monografías
+    { title: "Ando", author: "Philip Jodidio", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen nº45" },
+    { title: "Sean Godsell: Houses", author: "Sean Godsell", genre: "Arquitectura", year: "2019", status: "pendiente", rating: 0, notes: "Thames & Hudson" },
+    { title: "Lina Bo Bardi", author: "Zeuler R. Lima", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Hatje Cantz" },
+    { title: "Le Corbusier", author: "Jean-Louis Cohen", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Contemporary European Architects Vol. I", author: "Philip Jodidio", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Contemporary American Architects Vol. II", author: "Philip Jodidio", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Palladio", author: "Wundram / Pape / Marion", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Alvar Aalto", author: "Louna Lahti", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Rooftops - Islands in the Sky", author: "Philip Jodidio", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Meier", author: "Philip Jodidio", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Taschen" },
+    { title: "Mies", author: "Agustín Ferrer Casas", genre: "Arquitectura / Cómic", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 10 - Barcelona / Viajes
+    { title: "De lo espiritual en el arte", author: "Vasili Kandinsky", genre: "Arte / Ensayo", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Barcelona en Sèrie", author: "Pepe Navarro", genre: "Fotografía / Arquitectura", year: "2018", status: "pendiente", rating: 0, notes: "Ayuntamiento de Barcelona. Catalán/castellano/inglés" },
+    { title: "Barcelona", author: "Triangle Books", genre: "Viajes / Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Barcelona Souvenir", author: "Triangle Books", genre: "Viajes / Fotografía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Mitología Egipcia", author: "Aude Gros de Beler", genre: "Historia / Mitología", year: "", status: "pendiente", rating: 0, notes: "Prefacio: Aly Maher el Sayed" },
+    { title: "La hojarasca", author: "Gabriel García Márquez", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Bruguera, Libro Amigo" },
+    { title: "Le Travel Book", author: "Lonely Planet", genre: "Viajes", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 14 - Ciencia ficción clásica
+    { title: "Ubik", author: "Philip K. Dick", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "La Factoría de Ideas, nº3" },
+    { title: "Cuentos completos II", author: "Philip K. Dick", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Los escándalos de Crome", author: "Aldous Huxley", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Fragmentos de honor", author: "Lois McMaster Bujold", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "nº01" },
+    { title: "Ciberiada", author: "Stanislaw Lem", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Neuromante", author: "William Gibson", genre: "Ciencia Ficción / Cyberpunk", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El cálculo de Dios", author: "Robert J. Sawyer", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "nº1339" },
+    { title: "Cosmo", author: "Gregory Benford", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Nova nº128" },
+    { title: "Los desposeídos", author: "Ursula K. Le Guin", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Editorial b" },
+    { title: "Lotería solar", author: "Philip K. Dick", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La paja en el ojo de Dios", author: "Larry Niven / Jerry Pournelle", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Ciudad revientacráneos", author: "Jeremy Robert Johnson", genre: "Ciencia Ficción / Bizarro", year: "", status: "pendiente", rating: 0, notes: "Orciny Press, nº03" },
+    { title: "La investigación", author: "Stanislaw Lem", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La guerra de los mundos", author: "H.G. Wells", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Planeta" },
+    { title: "El martillo de Dios", author: "Arthur C. Clarke", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "nº103" },
+    { title: "Tras el incierto horizonte", author: "Frederik Pohl", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Nova" },
+    { title: "El décimo planeta", author: "Frederik Pohl", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Más que humano", author: "Theodore Sturgeon", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 15 - Ciencia ficción moderna
+    { title: "Dune", author: "Frank Herbert", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El fin de la muerte", author: "Cixin Liu", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Nova / Editorial B. Trilogía de los Tres Cuerpos nº3" },
+    { title: "Las puertas de Anubis", author: "Tim Powers", genre: "Ciencia Ficción / Steampunk", year: "1983", status: "pendiente", rating: 0, notes: "Premio Philip K. Dick 1983. Gigamesh" },
+    { title: "Seveneves", author: "Neal Stephenson", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Bourbon Press" },
+    { title: "Criptonomicón I - El código enigma", author: "Neal Stephenson", genre: "Ciencia Ficción / Thriller", year: "", status: "pendiente", rating: 0, notes: "Nova" },
+    { title: "Criptonomicón II", author: "Neal Stephenson", genre: "Ciencia Ficción / Thriller", year: "", status: "pendiente", rating: 0, notes: "nº1362" },
+    { title: "Criptonomicón III - El código Arétusa", author: "Neal Stephenson", genre: "Ciencia Ficción / Thriller", year: "", status: "pendiente", rating: 0, notes: "Nova nº154" },
+    { title: "Diarios de las estrellas II", author: "Stanislaw Lem", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Diarios de las estrellas I", author: "Stanislaw Lem", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Pórtico", author: "Frederik Pohl", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Nova / Editorial B" },
+    // Foto 14 - Ficción variada
+    // Foto 17 - Ficción variada
+    { title: "Así en La Habana como en el cielo", author: "J.J. Armas Marcelo", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "nº267" },
+    { title: "La tía Tula", author: "Miguel de Unamuno", genre: "Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "nº682" },
+    { title: "Hamlet / Macbeth", author: "William Shakespeare", genre: "Clásico / Teatro", year: "", status: "pendiente", rating: 0, notes: "El Libro Aguilar" },
+    { title: "Trafalgar", author: "Benito Pérez Galdós", genre: "Ficción Histórica / Clásico", year: "", status: "pendiente", rating: 0, notes: "nº188" },
+    { title: "El mapa y el territorio", author: "Michel Houellebecq", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El baile de la Victoria", author: "Antonio Skármeta", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El día que Selma soñó con un okapi", author: "Mariana Leky", genre: "Ficción", year: "", status: "pendiente", rating: 0, notes: "Seix Barral" },
+    // Foto 15 - Cómic
+    { title: "Las tumbas de los faraones", author: "Todolibro", genre: "Historia / Egipto", year: "", status: "pendiente", rating: 0, notes: "Libro con forma de pirámide. Editorial Todolibro" },
+    { title: "Todo Mafalda", author: "Quino", genre: "Cómic / Humor", year: "", status: "pendiente", rating: 0, notes: "Lumen" },
+    { title: "Mafalda inédita", author: "Quino", genre: "Cómic / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Batman: El caballero oscuro", author: "Frank Miller / Lynn Varley", genre: "Cómic / Superhéroes", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Batman: El regreso del Caballero Oscuro", author: "Frank Miller / Lynn Varley / Klaus Janson", genre: "Cómic / Superhéroes", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Batman: El Caballero Oscuro - La raza superior", author: "Frank Miller", genre: "Cómic / Superhéroes", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Batman: Year One", author: "Frank Miller", genre: "Cómic / Superhéroes", year: "", status: "pendiente", rating: 0, notes: "DC Black Label" },
+    { title: "Batman: All-Star Batman y Robin el chico maravilla", author: "Frank Miller / Jim Lee", genre: "Cómic / Superhéroes", year: "", status: "pendiente", rating: 0, notes: "DC" },
+    { title: "Batman: El largo Halloween", author: "Jeph Loeb / Tim Sale", genre: "Cómic / Superhéroes", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 19 - Arquitectura técnica y otros
+    { title: "The Wizard of Oz", author: "L. Frank Baum", genre: "Ficción / Clásico infantil", year: "", status: "pendiente", rating: 0, notes: "Ilustrado por Michael Hague. Henry Holt" },
+    { title: "Las aventuras de Sherlock Holmes", author: "Berardi y Trevisan", genre: "Cómic / Misterio", year: "", status: "pendiente", rating: 0, notes: "Ponent Mon" },
+    { title: "Maravillas de la arquitectura", author: "DK / Dan Cruickshank (prólogo)", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "DK Dorling Kindersley" },
+    { title: "Arquitectura — Maravillas de la arquitectura", author: "Berard / Trevisan", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Gestalten" },
+    { title: "Upgrade - Home Extensions, Alterations and Refurbishments", author: "Varios", genre: "Arquitectura / Interiorismo", year: "", status: "pendiente", rating: 0, notes: "Ullmann" },
+    { title: "Madera / Wood", author: "Barbara Linz", genre: "Arquitectura / Materiales", year: "", status: "pendiente", rating: 0, notes: "Actes Sud" },
+    { title: "Le Corbusier", author: "Sin autor indicado", genre: "Arquitectura / Monografía", year: "", status: "pendiente", rating: 0, notes: "Monografía fotográfica. Actes Sud" },
+    { title: "Manual de estructuras ilustrado", author: "Francis D.K. Ching / Barry S. Onouye / Douglas Zuberbuhler", genre: "Arquitectura / Ingeniería", year: "", status: "pendiente", rating: 0, notes: "Editorial GG" },
+    { title: "Arquitectura popular española - Vol. I", author: "Carlos Flores", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Aguilar" },
+    { title: "Arquitectura popular española - Vol. II", author: "Carlos Flores", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Aguilar" },
+    { title: "Arquitectura popular española - Vol. III", author: "Carlos Flores", genre: "Arquitectura", year: "", status: "pendiente", rating: 0, notes: "Aguilar" },
+    // Foto 17 - Arte Sci-Fi
+    { title: "El estado eléctrico", author: "Simon Stålenhag", genre: "Ciencia Ficción / Novela ilustrada", year: "2020", status: "pendiente", rating: 0, notes: "Roca Editorial. Novela ilustrada distópica" },
+    { title: "The Art of John Harris: Into the Blue", author: "John Harris", genre: "Arte / Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Titan Books" },
+    { title: "The Art of John Harris: Beyond the Horizon", author: "John Harris", genre: "Arte / Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Titan Books" },
+    // Foto 21 - Ciencia ficción clásica (Clarke, Lem, Dick, Huxley, Bester)
+    { title: "Ciencia Ficción — Selección 40", author: "VV.AA. (Anderson, Farmer, Jennings, Lee, Stapledon, Young...)", genre: "Ciencia Ficción / Antología", year: "", status: "pendiente", rating: 0, notes: "Bruguera, Libro Amigo. Antología" },
+    { title: "Un mundo feliz", author: "Aldous Huxley", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Biblioteca de Ciencia Ficción nº15. Planeta-DeAgostini" },
+    { title: "Los cuentos ocultos", author: "Orson Scott Card", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "Biblioteca de Ciencia Ficción nº2" },
+    { title: "El espectro del Titanic", author: "Arthur C. Clarke", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Biblioteca de Ciencia Ficción nº185" },
+    { title: "Las estrellas, mi destino", author: "Alfred Bester", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Biblioteca de Ciencia Ficción nº95" },
+    { title: "Blade Runner (¿Sueñan los androides con ovejas eléctricas?)", author: "Philip K. Dick", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "BA 0793" },
+    { title: "Fiasco", author: "Stanislaw Lem", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Solaris", author: "Stanislaw Lem", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "P&J" },
+    { title: "3001: Odisea final", author: "Arthur C. Clarke", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "P&J nº185/5" },
+    { title: "2061: Odisea tres", author: "Arthur C. Clarke", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "P&J nº185/3" },
+    { title: "2001: Una odisea espacial", author: "Arthur C. Clarke", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "P&J nº185/4" },
+    // Foto 22 - Asimov completo
+    { title: "Preludio a la Fundación", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "P&J" },
+    { title: "Fundación", author: "Isaac Asimov", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "P&J nº136/2" },
+    { title: "Fundación e Imperio", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "nº136" },
+    { title: "Segunda Fundación", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "nº136/3" },
+    { title: "Yo, Robot", author: "Isaac Asimov", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "nº74" },
+    { title: "Los robots del amanecer", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "P&J nº136/11" },
+    { title: "Sueños de Robot", author: "Isaac Asimov", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "P&J nº136/14" },
+    { title: "Robots e Imperio", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "P&J, edición grande dorada" },
+    { title: "Cuentos completos II", author: "Isaac Asimov", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "nº136/36" },
+    { title: "El sol desnudo", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Estoy en Puertomarte sin Hilda", author: "Isaac Asimov", genre: "Ciencia Ficción / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Compre Júpiter", author: "Isaac Asimov", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "Biblioteca de Ciencia Ficción" },
+    { title: "El hombre del bicentenario", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "nº29" },
+    { title: "Lucky Starr: El genio de Mercurio", author: "Isaac Asimov", genre: "Ciencia Ficción / Juvenil", year: "", status: "pendiente", rating: 0, notes: "Lucky Starr and the Big Sun of Mercury. Crev" },
+    { title: "Lucky Starr: Las lunas de Júpiter", author: "Isaac Asimov", genre: "Ciencia Ficción / Juvenil", year: "", status: "pendiente", rating: 0, notes: "Lucky Starr and the Moons of Jupiter. Crev" },
+    { title: "Alianza", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "nº10" },
+    { title: "Norby", author: "Isaac Asimov / Janet Asimov", genre: "Ciencia Ficción / Juvenil", year: "", status: "pendiente", rating: 0, notes: "Novilbro" },
+    { title: "El robot extravagante", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Martínez Roca" },
+    { title: "Los vientos del cambio", author: "Isaac Asimov", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Némesis", author: "Isaac Asimov", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "P&J" },
+    { title: "Visiones de Robot", author: "Isaac Asimov", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "" },
+    // Foto 23 - Ciencia ficción moderna (IMG_1295)
+    { title: "La caída del Leviatán", author: "James S.A. Corey", genre: "Ciencia Ficción", year: "2022", status: "pendiente", rating: 0, notes: "The Expanse 9. Nova" },
+    { title: "La cólera de Tiamat", author: "James S.A. Corey", genre: "Ciencia Ficción", year: "2022", status: "pendiente", rating: 0, notes: "The Expanse 8. Nova" },
+    { title: "El alzamiento de Persépolis", author: "James S.A. Corey", genre: "Ciencia Ficción", year: "2022", status: "pendiente", rating: 0, notes: "The Expanse 7. Nova" },
+    { title: "El bosque oscuro", author: "Cixin Liu", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Trilogía de los Tres Cuerpos nº2. Nova/b" },
+    { title: "El hombre en el castillo", author: "Philip K. Dick", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Booket" },
+    { title: "Señor del espacio y el tiempo", author: "Rudy Rucker", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Sistemas críticos", author: "Martha Wells", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Illuminatus! (Trilogía)", author: "Robert Shea / Robert Anton Wilson", genre: "Ciencia Ficción / Conspiración", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "El problema de los tres cuerpos", author: "Cixin Liu", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Trilogía de los Tres Cuerpos nº1. B" },
+    { title: "Crónicas marcianas", author: "Ray Bradbury", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "Minotauro" },
+    { title: "Alvin Maker I: El séptimo hijo", author: "Orson Scott Card", genre: "Ciencia Ficción / Fantasía", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Los mejores relatos de ciencia ficción I", author: "VV.AA.", genre: "Ciencia Ficción / Antología", year: "", status: "pendiente", rating: 0, notes: "VIB" },
+    { title: "The Hitchhiker's Guide to the Galaxy", author: "Douglas Adams", genre: "Ciencia Ficción / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Antihielo", author: "Stephen Baxter", genre: "Ciencia Ficción / Steampunk", year: "", status: "pendiente", rating: 0, notes: "Anti-Ice. Nova nº119. Ediciones B. Ucronía victoriana" },
+    { title: "Cuentos completos I", author: "Philip K. Dick", genre: "Ciencia Ficción / Cuentos", year: "", status: "pendiente", rating: 0, notes: "Minotauro" },
+    { title: "Visión ciega", author: "Peter Watts", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Alamut / Bibliópolis" },
+    { title: "The High Frontier", author: "Gerard K. O'Neill", genre: "Ciencia Ficción / No ficción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Northwest Smith", author: "Catherine Lucille Moore", genre: "Ciencia Ficción / Clásico", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Saltonautas", author: "Hao Jingfang", genre: "Ciencia Ficción", year: "", status: "pendiente", rating: 0, notes: "Nova" },
+    // Foto 23 - fin
+
+    // ── TERCER Y ÚLTIMO LOTE ───────────────────────────────────────────────────
+    // Foto 24 - Cómics / Humor (IMG_1294)
+    { title: "Papá Noel", author: "Raymond Briggs", genre: "Cómic / Infantil", year: "", status: "pendiente", rating: 0, notes: "Editorial Miñón" },
+    { title: "Mujeres alteradas", author: "Maitena", genre: "Cómic / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Idiotizadas: Un cuento de empoderhadas", author: "Raquel Córcoles (Moderna de Pueblo)", genre: "Cómic / Humor / Feminismo", year: "2017", status: "pendiente", rating: 0, notes: "Zenith" },
+    { title: "Guía completa de Los Simpsons", author: "Matt Groening", genre: "Cómic / Humor", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Un autre regard", author: "Emma (Emmaclit)", genre: "Cómic / Feminismo", year: "2017", status: "pendiente", rating: 0, notes: "Série: Un autre regard nº1. Massot Éditions. En francés" },
+    { title: "Crecer es un mito", author: "Sarah Andersen (Sarah's Scribbles)", genre: "Cómic / Humor", year: "", status: "pendiente", rating: 0, notes: "BDBL" },
+    // Foto 25 - Náutica / Técnica (IMG_1293)
+    { title: "Bloc Marine Méditerranée 2018", author: "VV.AA.", genre: "Náutica / Guía", year: "2018", status: "pendiente", rating: 0, notes: "Guía náutica mediterráneo. En francés" },
+    { title: "Jacques Cousteau's Calypso", author: "Jacques-Yves Cousteau / Alexis Sivirine", genre: "Náutica / Exploración", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "La enciclopedia de los barcos", author: "Desconocido", genre: "Náutica / Historia", year: "", status: "pendiente", rating: 0, notes: "Gran volumen negro. DM" },
+    { title: "La construcción sándwich", author: "Xavier Soler", genre: "Náutica / Construcción", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Fundamentos geométricos", author: "Víctor Villoria San Miguel", genre: "Técnica / Geometría", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Representación de curvas y superficies — Geometría descriptiva", author: "Víctor Villoria San Miguel", genre: "Técnica / Geometría", year: "", status: "pendiente", rating: 0, notes: "F.E.I.N." },
+    { title: "Historia de la Navegación Marítima Española", author: "Javier de Juan y Peñalosa / Santiago Fernández Giménez", genre: "Historia / Náutica", year: "", status: "pendiente", rating: 0, notes: "Urbión, azul" },
+    { title: "Una visión sobre la Historia Marítima Española", author: "José M. Gutiérrez de la Cámara Señán", genre: "Historia / Náutica", year: "", status: "pendiente", rating: 0, notes: "Bazán, azul" },
+    { title: "Yacht Design According to Perry", author: "Bob Perry", genre: "Náutica / Diseño", year: "", status: "pendiente", rating: 0, notes: "McGraw-Hill" },
+    // Foto 26 - Relojería / Coctelería (IMG_1292)
+    { title: "Los mejores cócteles del mundo", author: "Antonio Primicer", genre: "Gastronomía / Coctelería", year: "", status: "pendiente", rating: 0, notes: "DVA" },
+    { title: "Casillas / Máquinas", author: "Desconocido", genre: "Relojería / Mecánica", year: "", status: "pendiente", rating: 0, notes: "Pequeños, amarillos. Pueden ser un solo volumen" },
+    { title: "Manual del relojero", author: "Claudio Saunier", genre: "Relojería / Técnica", year: "1893", status: "pendiente", rating: 0, notes: "Clásico de relojería. Edición facsímil" },
+    { title: "La fábrica de relojes", author: "Desconocido", genre: "Relojería", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Montres Rares", author: "Paul Miquel", genre: "Relojería / Coleccionismo", year: "", status: "pendiente", rating: 0, notes: "Préfaces de Aurel Bacs y Jean-Claude Biver. En francés" },
+    // Foto 27 - Relojería alta gama (IMG_1291)
+    { title: "The Art of Breguet", author: "George Daniels", genre: "Relojería / Arte", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Watchmaking", author: "George Daniels", genre: "Relojería / Técnica", year: "", status: "pendiente", rating: 0, notes: "PWP. Lomo dorado" },
+    // Foto 5 - Ingeniería naval / Náutica técnica
+    // Foto 28 - Náutica / Ingeniería (IMG_1290)
+    { title: "Probabilistic Theory of Ship Dynamics", author: "Basil Mosenthal / Price and Bishop", genre: "Ingeniería Naval / Técnica", year: "", status: "pendiente", rating: 0, notes: "" },
+    { title: "Calculus", author: "P. Abbott", genre: "Matemáticas", year: "", status: "pendiente", rating: 0, notes: "Teach Yourself Books" },
+    { title: "Construcción de un parque eólico offshore / Building an Offshore Wind Farm", author: "Jochen Tacx", genre: "Ingeniería / Energías renovables", year: "", status: "pendiente", rating: 0, notes: "Bilingüe español/inglés" },
+    { title: "Electricidad", author: "Juan Mateo Romero", genre: "Física / Técnica", year: "", status: "pendiente", rating: 0, notes: "Editorial Ramón Sopena. Edición antigua" },
+    { title: "Principios de Ingeniería Naval", author: "Jesús Victoria Meizoso", genre: "Ingeniería Naval", year: "", status: "pendiente", rating: 0, notes: "" },
+];
+
+// Arrancar carga desde Google Sheets
+gsLoad();
+</script>
+</body>
+</html>
