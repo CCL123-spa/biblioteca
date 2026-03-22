@@ -860,8 +860,8 @@ async function gsLoad() {
     } else {
       books = rows.map(r => ({
         id: Number(r.id),
-        title: r.titulo || '',
-        author: r.autor || '',
+        title: String(r.titulo || ''),
+        author: String(r.autor || ''),
         genre: r.genero || '',
         year: String(r['año'] || ''),
         status: r.estado || 'pendiente',
@@ -946,8 +946,8 @@ function renderBooks() {
     if (currentFilter === 'visto' && b.status !== 'visto') return false;
     if (currentGenre !== 'all' && getCategory(b.genre) !== currentGenre) return false;
     if (query) {
-      const inTitle = b.title.toLowerCase().includes(query);
-      const inAuthor = b.author.toLowerCase().includes(query);
+      const inTitle = (b.title || "").toLowerCase().includes(query);
+      const inAuthor = (b.author || "").toLowerCase().includes(query);
       return inTitle || inAuthor;
     }
     return true;
